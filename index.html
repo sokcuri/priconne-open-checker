@@ -11,6 +11,7 @@ body {
   margin: 0;
   text-align: center;
 }
+
 section {
   display: inline-block;
   text-align: center;
@@ -18,25 +19,57 @@ section {
   padding: 20px;
   opacity: .8;
 }
+
 h1 {
   font-size: 24pt;
 }
+
 #result {
   size: 15pt;
 }
 
-h2.yes::before {
+h2.ServerOpen::before {
   content: '응!';
   color: #50B8E7;
   font-weight: bold;
-
 }
 
-h2.no::before {
+h2.ServerOpenWithNotice::before {
+  content: '응!';
+  color: #50B8E7;
+  font-weight: bold;
+}
+
+h2.InvalidAppInfo::before {
+  content: '데이터를 못받아왔어';
+  color: red;
+  font-weight: bold;
+}
+
+h2.ServiceStatusNotOpen::before {
   content: '아니';
   color: red;
   font-weight: bold;
 }
+
+h2.NoticeCloseTerminate::before {
+  content: '아니';
+  color: red;
+  font-weight: bold;
+}
+
+h2.NoticeCloseTerminateOutOfTime::before {
+  content: '아니';
+  color: red;
+  font-weight: bold;
+}
+
+h2.ServiceStatusNotOpen::before {
+  content: '아니';
+  color: red;
+  font-weight: bold;
+}
+
 </style>
 <body>
 <iframe width=1 height=1 style="visibility: hidden;" allow="autoplay"></iframe>
@@ -47,10 +80,58 @@ h2.no::before {
 </section>
 </body>
 <script>
-let isOpened = 0;
+let prevStatus = 0;
 
-function setResult(text) {
-  document.querySelector('#result').classList.add(text === true ? 'yes' : 'no');
+function setServerStatus(status) {
+  setResult(status);
+
+  if (status !== prevStatus) {
+    if (status === 1) {
+      playBGM();
+    } else {
+      stopBGM();
+    }
+  }
+  prevStatus = status;
+}
+
+/*
+* -4: 데이터 받아오기 실패
+* -3: 서버 오픈 안함 (svcStatus가 open이 아님)
+* -2: notices 존재, close 누르면 terminate
+* -1: notices 존재, close 누르면 terminate (서버 점검 직전 or 연장 점검?)
+*  0: 미결정
+*  1: 서버 오픈 (notice 없음)
+*  2: 서버 오픈 (notices 존재)
+*/
+
+function setResult(result) {
+  let statusName = '';
+  switch(result) {
+    case -4:
+    statusName = 'InvalidAppInfo'
+    break;
+    case -3:
+    statusName = 'ServiceStatusNotOpen'
+    break;
+    case -2:
+    statusName = 'NoticeCloseTerminate';
+    break;
+    case -1:
+    statusName = 'NoticeCloseTerminateOutOfTime';
+    break;
+    case 0:
+    statusName = '';
+    break;
+    case 1:
+    statusName = 'ServerOpen';
+    break;
+    case 2:
+    statusName = 'ServerOpenWithNotice';
+    break;
+  }
+
+  document.querySelector('#result').className = statusName;
 }
 
 function setDetail(text) {
@@ -59,6 +140,42 @@ function setDetail(text) {
 
 function setTime(text) {
   document.querySelector('#time').innerText = text;
+}
+
+function getNoticeArray(data) {
+  if (!data || !data.content || !data.content.notices) return [];
+  return data.content.notices;
+}
+
+function getNotice(data) {
+  const notices = getNoticeArray(data);
+  if (notices.length && notices[0].msg)
+    return notices[0].msg;
+  else
+    return '';
+}
+
+function getServerOpened(data) {
+  const notices = getNoticeArray(data);
+  const currTime = new Date().getTime();
+
+  if (!data || !data.content) return -4;
+  if (data.content.svcStatus !== 'open') return -3;
+
+  if (notices[0]) {
+    if (notices[0].actionOnClose === 'terminate') {
+      if (notices[0].periodBeginTime >= currTime &&
+          notices[0].periodEndTime <= currTime) {
+            return -2;
+          } else {
+            return -1;
+          }
+    } else {
+      return 2;
+    }
+  } else {
+    return 1;
+  }
 }
 
 function playBGM() {
@@ -76,31 +193,17 @@ function getCurrentTime() {
 
 async function checkOpen() {
   const resp = await fetch('https://infodesk-zinny3.game.kakao.com/v2/app?appId=235375&appVer=2.0.11&market=googlePlay&sdkVer=3.10.2&os=android&lang=ko&osVer=6.0.1&country=kr');
-  const json = await resp.json();
+  const data = await resp.json();
 
-  setTime(getCurrentTime());
+  const currTime = getCurrentTime();
+  const noticeMsg = getNotice(data);
+  const isServerOpened = getServerOpened(data);
 
-  if (json && json.content) {
-    if (json.content.notices && json.content.notices.length) {
-      if (isOpened !== 1) {
-        setResult(false);
-        setDetail(json.content.notices[0].msg);
-        stopBGM();
-        isOpened = 1;
-      }
-      return;
-    }
-
-    if (json.content.svcStatus === 'open') {
-      if (isOpened !== -1) {
-        setResult(true);
-        setDetail('');
-        playBGM();
-        isOpened = -1;
-      }
-    }
-  }
+  setTime(currTime);
+  setDetail(noticeMsg);
+  setServerStatus(isServerOpened);
 }
+
 document.addEventListener('DOMContentLoaded', () => {
   checkOpen();
   setInterval(() => checkOpen(), 30000);
