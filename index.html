@@ -47,6 +47,8 @@ h2.no::before {
 </section>
 </body>
 <script>
+let isOpened = false;
+
 function setResult(text) {
   document.querySelector('#result').classList.add(text === true ? 'yes' : 'no');
 }
@@ -80,16 +82,22 @@ async function checkOpen() {
 
   if (json && json.content) {
     if (json.content.notices && json.content.notices.length) {
-      setResult('아니');
-      setDetail(json.content.notices[0].msg);
-      stopBGM();
+      if (!isOpened) {
+        setResult(false);
+        setDetail(json.content.notices[0].msg);
+        stopBGM();
+        isOpened = true;
+      }
       return;
     }
 
     if (json.content.svcStatus === 'open') {
-      setResult(true);
-      setDetail('');
-      playBGM();
+      if (isOpened) {
+        setResult(true);
+        setDetail('');
+        playBGM();
+        isOpened = false;
+      }
     }
   }
 }
