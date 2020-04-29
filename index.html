@@ -249,5 +249,11 @@ document.addEventListener('DOMContentLoaded', () => {
   checkOpen();
   setInterval(() => checkOpen(), 30000);
 });
+
+document.addEventListener('keydown', e => {
+  if (e.code.toLowerCase() === 'escape') {
+    stopBGM();
+  }
+});
 </script>
 </html>
