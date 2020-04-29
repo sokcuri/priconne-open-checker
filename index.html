@@ -1,0 +1,101 @@
+<html>
+<head>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<style>
+body {
+  font-family: "Noto Sans KR", sans-serif;
+  background: url('https://priconne-redive.jp/ele-wp/wp-content/uploads/2020/04/c73868cb5429b263bde6c06a2855767f.jpg') no-repeat;
+  background-size: cover;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+}
+section {
+  display: inline-block;
+  text-align: center;
+  background: #fff;
+  padding: 20px;
+  opacity: .8;
+}
+h1 {
+  font-size: 24pt;
+}
+#result {
+  size: 15pt;
+}
+
+h2.yes::before {
+  content: '응!';
+  color: #50B8E7;
+  font-weight: bold;
+
+}
+
+h2.no::before {
+  content: '아니';
+  color: red;
+  font-weight: bold;
+}
+</style>
+<body>
+<iframe width=1 height=1 style="visibility: hidden;" allow="autoplay"></iframe>
+<section>
+  <h1>프리코네 지금 열렸니? (<span id="time"></span> 기준)</h1>
+  <h2 id="result"></h2>
+  <span id="detail"></span>
+</section>
+</body>
+<script>
+function setResult(text) {
+  document.querySelector('#result').classList.add(text === true ? 'yes' : 'no');
+}
+
+function setDetail(text) {
+  document.querySelector('#detail').innerText = text;
+}
+
+function setTime(text) {
+  document.querySelector('#time').innerText = text;
+}
+
+function playBGM() {
+  document.querySelector('iframe').src = 'https://www.youtube.com/embed/9l-VZC3UGXA?ecver=1&amp;autoplay=1&amp;iv_load_policy=1&amp;yt:stretch=16:9&amp;autohide=1';
+}
+
+function stopBGM() {
+  document.querySelector('iframe').src = '';
+}
+
+function getCurrentTime() {
+  const date = new Date();
+  return ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+}
+
+async function checkOpen() {
+  const resp = await fetch('https://infodesk-zinny3.game.kakao.com/v2/app?appId=235375&appVer=2.0.11&market=googlePlay&sdkVer=3.10.2&os=android&lang=ko&osVer=6.0.1&country=kr');
+  const json = await resp.json();
+
+  setTime(getCurrentTime());
+
+  if (json && json.content) {
+    if (json.content.notices && json.content.notices.length) {
+      setResult('아니');
+      setDetail(json.content.notices[0].msg);
+      stopBGM();
+      return;
+    }
+
+    if (json.content.svcStatus === 'open') {
+      setResult(true);
+      setDetail('');
+      playBGM();
+    }
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  checkOpen();
+  setInterval(() => checkOpen(), 3000);
+});
+</script>
+</html>
