@@ -1,4 +1,4 @@
-# 프리코네 서버 열렸니?
+# 프리코네 지금 열렸니?
 카카오게임즈에서 서비스하는 프린세스 커넥트! Re:Dive의 점검 현황을 체크해 주는 페이지입니다
 
 https://sokcuri.github.io/priconne-open-checker/
