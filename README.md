@@ -9,10 +9,10 @@ https://sokcuri.github.io/priconne-open-checker/
 
 배경화면의 유니짱즈!는 공식 홈페이지에서 제공하는 [팬 키트](https://priconne-redive.jp/fankit02/) 페이지를 링크해 사용하고 있습니다
 
-## 사용 화면
+## 작동 화면
 | 서버 닫힘 | 서버 열림 |
 | -------- | -------- |
-| ![](exam1.png)  | ![](exam2.png) |
+| ![](images/sample1.png)  | ![](images/sample2.png) |
 
 ## 참고
 이 프로젝트는 프리코네 유저가 만들었으며, 카카오게임즈 및 사이게임즈와 관련이 없습니다. 문의 사항이 있는 경우 리포지토리 내 이슈를 등록해주세요.
