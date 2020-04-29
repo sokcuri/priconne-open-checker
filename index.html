@@ -47,7 +47,7 @@ h2.no::before {
 </section>
 </body>
 <script>
-let isOpened = undefined;
+let isOpened = 0;
 
 function setResult(text) {
   document.querySelector('#result').classList.add(text === true ? 'yes' : 'no');
@@ -82,21 +82,21 @@ async function checkOpen() {
 
   if (json && json.content) {
     if (json.content.notices && json.content.notices.length) {
-      if (isOpened === false) {
+      if (isOpened !== 1) {
         setResult(false);
         setDetail(json.content.notices[0].msg);
         stopBGM();
-        isOpened = true;
+        isOpened = 1;
       }
       return;
     }
 
     if (json.content.svcStatus === 'open') {
-      if (isOpened === true) {
+      if (isOpened !== -1) {
         setResult(true);
         setDetail('');
         playBGM();
-        isOpened = false;
+        isOpened = -1;
       }
     }
   }
