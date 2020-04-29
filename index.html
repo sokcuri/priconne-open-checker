@@ -47,7 +47,7 @@ h2.no::before {
 </section>
 </body>
 <script>
-let isOpened = false;
+let isOpened = undefined;
 
 function setResult(text) {
   document.querySelector('#result').classList.add(text === true ? 'yes' : 'no');
@@ -82,7 +82,7 @@ async function checkOpen() {
 
   if (json && json.content) {
     if (json.content.notices && json.content.notices.length) {
-      if (!isOpened) {
+      if (isOpened === false) {
         setResult(false);
         setDetail(json.content.notices[0].msg);
         stopBGM();
@@ -92,7 +92,7 @@ async function checkOpen() {
     }
 
     if (json.content.svcStatus === 'open') {
-      if (isOpened) {
+      if (isOpened === true) {
         setResult(true);
         setDetail('');
         playBGM();
